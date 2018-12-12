@@ -3,7 +3,8 @@ package datadog.trace.tracer;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A simple wrapper for system clock that aims to provide the current time
+ * // FIXME: rewrite this javadoc A simple wrapper for system clock that aims to provide the current
+ * time
  *
  * <p>
  *
@@ -22,13 +23,45 @@ import java.util.concurrent.TimeUnit;
  */
 public class Clock {
 
+  private final Tracer tracer;
   /**
-   * Get the current nanos ticks (i.e. System.nanonTime()), this method can't be use for date
-   * accuracy (only duration calculations)
-   *
-   * @return The current nanos ticks
+   * Trace start time in nano seconds measured up to a millisecond accuracy
    */
-  public static long nanoTime() {
+  private final long startTimeNano;
+  /**
+   * Nano second ticks value at trace start
+   */
+  private final long startNanoTicks;
+
+  public Clock(final Tracer tracer) {
+    this.tracer = tracer;
+    startTimeNano = epochTimeNano();
+    startNanoTicks = nanoTicks();
+  }
+
+  /**
+   * @return {@link Tracer} that created this clock.
+   */
+  public Tracer getTracer() {
+    return tracer;
+  }
+
+  /**
+   * Create new timestamp instance for current time.
+   *
+   * @return new timestamp capturing current time.
+   */
+  public Timestamp createCurrentTimestamp() {
+    return new Timestamp(this, nanoTicks());
+  }
+
+  /**
+   * Get the current nanos ticks (i.e. System.nanoTime()), this method can't be use for date
+   * accuracy (only duration calculations).
+   *
+   * @return The current nanos ticks.
+   */
+  long nanoTicks() {
     return System.nanoTime();
   }
 
@@ -37,20 +70,29 @@ public class Clock {
    *
    * <p>Note: The actual precision is the millis.
    *
-   * @return the current epoch time in micros
+   * @return the current epoch time in micros.
    */
-  public static long epochTimeMicro() {
+  long epochTimeMicro() {
     return TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis());
   }
 
   /**
    * Get the current epoch time in nanos.
    *
-   * <p>Note: The actual precision is the millis. This will overflow ~290 years after epoch
+   * <p>Note: The actual precision is the millis. This will overflow ~290 years after epoch.
    *
-   * @return the current epoch time in nanos
+   * @return the current epoch time in nanos.
    */
-  public static long epochTimeNano() {
+  long epochTimeNano() {
     return TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+  }
+
+  /**
+   * Get time this clock instance was created in nanos.
+   *
+   * @return the time this clock instance was created in nanos.
+   */
+  long getStartTimeNano() {
+    return startTimeNano;
   }
 }
